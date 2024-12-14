@@ -33,7 +33,12 @@ func GetServerInfo() _type.FrpsServerInfoResponse {
 		log.Fatalf("Error sending request: %v", err)
 	}
 
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatalf("Error closing response body: %v", err)
+		}
+	}(resp.Body)
 
 	var response bytes.Buffer
 	if _, err := io.Copy(&response, resp.Body); err != nil {
