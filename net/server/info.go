@@ -53,3 +53,45 @@ func GetServerInfo() _type.FrpsServerInfoResponse {
 	}
 	return serverInfo
 }
+
+func GetProxyList(proxyType string) _type.Proxy {
+	configInfo := config.ReadCfg()
+	username := configInfo.Username
+	password := configInfo.Password
+	adminPort := configInfo.AdminPort
+
+	url := fmt.Sprintf("http://127.0.0.1:%s/api/proxy/%s", strconv.FormatInt(int64(adminPort), 10), proxyType)
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatalf("Error creating request: %v", err)
+	}
+
+	req.SetBasicAuth(username, password)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Error sending request: %v", err)
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatalf("Error closing response body: %v", err)
+		}
+	}(resp.Body)
+
+	var response bytes.Buffer
+	if _, err := io.Copy(&response, resp.Body); err != nil {
+		log.Fatalf("Error reading response body: %v", err)
+	}
+
+	var proxyInfo _type.Proxy
+	body := response.Bytes()
+	err = json.Unmarshal(body, &proxyInfo)
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	return proxyInfo
+}

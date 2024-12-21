@@ -78,11 +78,25 @@ func (w *WsClient) ReadMsg() {
 	}
 }
 
-func (w *WsClient) sendNodeInfoToServer(serverInfo _type.FrpsServerInfoResponse) {
+func (w *WsClient) sendNodeStatsToServer(serverInfo _type.FrpsServerInfoResponse) {
 	// nodeInfo
 	err := w.SendMsg("upload-node-stats", info.GetNodeInfo(serverInfo))
 	if err != nil {
 		log.Fatalf("Send node info to server failed! err: %s", err)
+	}
+}
+
+func (w *WsClient) sendProxyStatsToServer() {
+	types := []string{"tcp", "udp", "http", "https", "xtcp", "stcp"}
+	for _, p := range types {
+		proxies := info.GetProxies(p)
+		for _, j := range proxies {
+			err := w.SendMsg("upload-proxy-stats", j)
+			log.Printf("Send proxy info to the server: proxyName: %s, inbound: %s, outbound: %s", j["proxy_name"], j["inbound"], j["outbound"])
+			if err != nil {
+				log.Fatalf("Send proxy info to server failed! err: %s", err)
+			}
+		}
 	}
 }
 
@@ -128,11 +142,13 @@ func main() {
 		defer ticker.Stop()
 
 		serverInfo := server.GetServerInfo()
-		ws.sendNodeInfoToServer(serverInfo)
+		ws.sendNodeStatsToServer(serverInfo)
+		ws.sendProxyStatsToServer()
 
 		for range ticker.C {
 			serverInfo := server.GetServerInfo()
-			ws.sendNodeInfoToServer(serverInfo)
+			ws.sendNodeStatsToServer(serverInfo)
+			ws.sendProxyStatsToServer()
 		}
 	}
 }
