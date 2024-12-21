@@ -19,7 +19,7 @@ vet:
 	go vet ./...
 
 frps:
-	env CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/controller ./main
+	env CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/controller ./
 
 test: gotest
 
