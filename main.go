@@ -66,7 +66,6 @@ func (w *WsClient) ReadMsg() {
 			}
 			break
 		}
-		log.Printf("Received message from server: %v", msg)
 		var msgJson WsResponse
 		err = json.Unmarshal(msg, &msgJson)
 		if err != nil {
@@ -74,6 +73,9 @@ func (w *WsClient) ReadMsg() {
 		}
 		if msgJson.Status != 200 {
 			log.Printf("Error Message from server: %v", msgJson.Message)
+		}
+		if msgJson.Status == 200 {
+			log.Printf("Received message from server: %v", msgJson.Message)
 		}
 	}
 }
@@ -92,7 +94,7 @@ func (w *WsClient) sendProxyStatsToServer() {
 		proxies := info.GetProxies(p)
 		for _, j := range proxies {
 			err := w.SendMsg("upload-proxy-stats", j)
-			log.Printf("Send proxy info to the server: proxyName: %s, inbound: %s, outbound: %s", j["proxy_name"], j["inbound"], j["outbound"])
+			log.Printf("Send proxy info to the server: proxyName: %s, inbound: %v, outbound: %v", j["proxy_name"], j["inbound"], j["outbound"])
 			if err != nil {
 				log.Fatalf("Send proxy info to server failed! err: %s", err)
 			}
