@@ -19,7 +19,7 @@ vet:
 	go vet ./...
 
 main:
-	env CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/controller ./
+	env CGO_ENABLED=1 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/controller ./
 
 test: gotest
 
