@@ -29,13 +29,13 @@ for os in $os_all; do
                 continue
             fi
             mkdir ${controller_path}
-            mv ./LoCyanFrpController_${os}_${arch}.exe ${controller_path}/LoCyanFrpController.exe
+            mv ./controller_${os}_${arch}.exe ${controller_path}/controller.exe
         else
             if [ ! -f "./controller_${os}_${arch}" ]; then
                 continue
             fi
             mkdir ${controller_path}
-            mv ./LoCyanFrpController_${os}_${arch} ${controller_path}/LoCyanFrpController
+            mv ./controller_${os}_${arch} ${controller_path}/controller
         fi  
 
         # packages
