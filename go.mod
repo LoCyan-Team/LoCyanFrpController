@@ -10,7 +10,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0
 )
 
-replace github.com/apernet/OpenGFW => ./OpenGFW
+replace github.com/apernet/OpenGFW => ./ex-module/OpenGFW
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0 // indirect

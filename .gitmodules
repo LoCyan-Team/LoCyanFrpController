@@ -1,3 +1,6 @@
-[submodule "OpenGFW"]
+[submodule "ex-module/OpenGFW"]
 	path = ex-module/OpenGFW
 	url = https://github.com/LoCyan-Team/OpenGFW.git
+[submodule "ex-module/akile_monitor"]
+	path = ex-module/akile_monitor
+	url = https://github.com/LoCyan-Team/akile_monitor.git
