@@ -10,6 +10,7 @@ password =
 admin_port =
 
 [monitor]
+name =
 addr = wss://status.api.locyanfrp.cn/monitor
 network_device = eth0
 auth_secret =

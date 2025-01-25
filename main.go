@@ -13,6 +13,7 @@ import (
 	_type "lcf-controller/pkg/type/frps"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 )
@@ -20,9 +21,8 @@ import (
 // NewWebSocket 初始化WebSocket客户端
 func NewWebSocket() *WsClient {
 	ws := new(WsClient)
-	cfgInfo := config.ReadCfg()
-	ws.addr = cfgInfo.Addr
-	ws.config = cfgInfo
+	cfg := config.ReadCfg()
+	ws.addr = cfg.ControllerConfig.Addr
 	return ws
 }
 
@@ -37,11 +37,11 @@ func (w *WsClient) ConnectWsServer() (err error) {
 }
 
 // SendMsg 发送消息到服务器
-func (w *WsClient) SendMsg(action string, data map[string]any) (err error) {
+func (w *WsClient) SendMsg(cfg *config.Config, action string, data map[string]any) (err error) {
 	req := new(BasicRequest)
 	req.Action = action
-	req.Node.Id = w.config.NodeId
-	req.Node.ApiKey = w.config.NodeApiKey
+	req.Node.Id = cfg.ControllerConfig.NodeId
+	req.Node.ApiKey = cfg.ControllerConfig.NodeApiKey
 	req.Data = data
 	msg, err := json.Marshal(req)
 	err = w.conn.WriteMessage(websocket.TextMessage, msg)
@@ -84,23 +84,27 @@ func (w *WsClient) ReadMsg() {
 	}
 }
 
-func (w *WsClient) sendNodeStatsToServer(serverInfo _type.ServerInfoResponse) {
+func (w *WsClient) sendNodeStatsToServer(cfg *config.Config, serverInfo _type.ServerInfoResponse) {
 	// nodeInfo
-	err := w.SendMsg("upload-node-stats", info.GetNodeInfo(serverInfo))
+	err := w.SendMsg(cfg, "upload-node-stats", info.GetNodeInfo(serverInfo))
 	if err != nil {
 		logger.Logger.Error("send node info to server failed!", zap.Error(err))
 	}
 }
 
-func (w *WsClient) sendProxyStatsToServer() {
+func (w *WsClient) sendProxyStatsToServer(cfg *config.Config) {
 	types := []string{"tcp", "udp", "http", "https", "xtcp", "stcp"}
 	for _, p := range types {
-		proxies := info.GetProxies(p)
-		for _, j := range proxies {
-			err := w.SendMsg("upload-proxy-stats", j)
-			logger.Logger.Info("send proxy info to the server")
-			if err != nil {
-				logger.Logger.Error("send proxy info to server failed!", zap.Error(err))
+		proxies, err := info.GetProxies(p)
+		if err != nil {
+			logger.Logger.Error("can't request proxies info", zap.Error(err))
+		} else {
+			for _, j := range proxies {
+				err := w.SendMsg(cfg, "upload-proxy-stats", j)
+				logger.Logger.Info("send proxy info to the server")
+				if err != nil {
+					logger.Logger.Error("send proxy info to server failed!", zap.Error(err))
+				}
 			}
 		}
 	}
@@ -108,9 +112,8 @@ func (w *WsClient) sendProxyStatsToServer() {
 
 // WsClient WebSocket客户端结构
 type WsClient struct {
-	addr   string
-	conn   *websocket.Conn
-	config *config.Config
+	addr string
+	conn *websocket.Conn
 }
 
 type WsResponse struct {
@@ -151,12 +154,21 @@ func createContext() (context.Context, context.CancelFunc) {
 
 func main() {
 	logger.InitLogger()
-	ctx, _ := createContext()
 
+	if runtime.GOOS != "windows" && os.Getuid() != 0 {
+		logger.Logger.Fatal("please run as root user")
+		return
+	}
+
+	cfg := config.ReadCfg()
+
+	ctx, _ := createContext()
 	go inject.RunOpenGFW(ctx)
 
+	go inject.RunAkileMonitor(cfg.MonitorConfig)
+
 	ws := NewWebSocket()
-	logger.Logger.Info("starting to connect WebSocket...")
+	logger.Logger.Info("connecting to WebSocket endpoint...")
 	err := ws.ConnectWsServer()
 	if err != nil {
 		logger.Logger.Fatal(
@@ -164,7 +176,7 @@ func main() {
 			zap.Error(err),
 		)
 	} else {
-		logger.Logger.Info("connect to WebSocket server successfully!")
+		logger.Logger.Info("connect to WebSocket server successfully")
 		defer func(conn *websocket.Conn) {
 			err := conn.Close()
 			if err != nil {
@@ -175,17 +187,24 @@ func main() {
 			}
 		}(ws.conn)
 		go ws.ReadMsg()
-		ticker := time.NewTicker(time.Second * ws.config.SendDuration)
+		ticker := time.NewTicker(cfg.ControllerConfig.SendDuration)
 		defer ticker.Stop()
 
-		serverInfo := server.GetServerInfo()
-		ws.sendNodeStatsToServer(serverInfo)
-		ws.sendProxyStatsToServer()
+		serverInfo, err := server.GetServerInfo()
+		if err != nil {
+			logger.Logger.Error("can't get server info", zap.Error(err))
+		} else {
+			ws.sendNodeStatsToServer(cfg, serverInfo)
+			ws.sendProxyStatsToServer(cfg)
+		}
 
 		for range ticker.C {
-			serverInfo := server.GetServerInfo()
-			ws.sendNodeStatsToServer(serverInfo)
-			ws.sendProxyStatsToServer()
+			if err != nil {
+				logger.Logger.Error("can't get server info", zap.Error(err))
+			} else {
+				ws.sendNodeStatsToServer(cfg, serverInfo)
+				ws.sendProxyStatsToServer(cfg)
+			}
 		}
 	}
 }

@@ -5,8 +5,11 @@ import (
 	"strings"
 )
 
-func GetProxies(proxyType string) (listMap []map[string]any) {
-	proxies := server.GetProxyList(proxyType)
+func GetProxies(proxyType string) ([]map[string]any, error) {
+	proxies, err := server.GetProxyList(proxyType)
+	if err != nil {
+		return nil, err
+	}
 	proxyList := make([]map[string]any, 0)
 	for _, p := range proxies.Proxies {
 		tmp := make(map[string]any)
@@ -15,5 +18,5 @@ func GetProxies(proxyType string) (listMap []map[string]any) {
 		tmp["outbound"] = p.TodayTrafficOut
 		proxyList = append(proxyList, tmp)
 	}
-	return proxyList
+	return proxyList, nil
 }

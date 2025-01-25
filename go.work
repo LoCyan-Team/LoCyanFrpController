@@ -4,5 +4,4 @@ toolchain go1.23.4
 
 use (
 	.
-	ex-module/OpenGFW
 )

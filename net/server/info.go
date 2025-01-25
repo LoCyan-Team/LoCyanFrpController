@@ -12,86 +12,83 @@ import (
 	"strconv"
 )
 
-func GetServerInfo() frps.ServerInfoResponse {
-	configInfo := config.ReadCfg()
-	username := configInfo.Username
-	password := configInfo.Password
-	adminPort := configInfo.AdminPort
+var cfg = config.ReadCfg().FrpServerConfig
 
-	url := fmt.Sprintf("http://127.0.0.1:%s/api/serverinfo", strconv.FormatInt(int64(adminPort), 10))
+func getBasicAuthInfo() (string, string) {
+	return cfg.Username, cfg.Password
+}
+
+func getUrl(path string) string {
+	return fmt.Sprintf(
+		"http://%s:%s/api%s",
+		cfg.Host,
+		strconv.FormatInt(int64(cfg.AdminPort), 10),
+		path,
+	)
+}
+
+func GetServerInfo() (frps.ServerInfoResponse, error) {
+	url := getUrl("/serverinfo")
 
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatalf("Error creating request: %v", err)
+		return frps.ServerInfoResponse{}, err
 	}
 
-	req.SetBasicAuth(username, password)
+	req.SetBasicAuth(getBasicAuthInfo())
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Error sending request: %v", err)
+		return frps.ServerInfoResponse{}, err
 	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Fatalf("Error closing response body: %v", err)
-		}
-	}(resp.Body)
+	defer resp.Body.Close()
 
 	var response bytes.Buffer
 	if _, err := io.Copy(&response, resp.Body); err != nil {
-		log.Fatalf("Error reading response body: %v", err)
+		return frps.ServerInfoResponse{}, err
 	}
 
 	var serverInfo frps.ServerInfoResponse
 	body := response.Bytes()
 	err = json.Unmarshal(body, &serverInfo)
 	if err != nil {
-		log.Fatalf("Error unmarshalling JSON: %v", err)
+		log.Fatalf("error unmarshalling JSON: %v", err)
 	}
-	return serverInfo
+	return serverInfo, nil
 }
 
-func GetProxyList(proxyType string) frps.Proxy {
-	configInfo := config.ReadCfg()
-	username := configInfo.Username
-	password := configInfo.Password
-	adminPort := configInfo.AdminPort
-
-	url := fmt.Sprintf("http://127.0.0.1:%s/api/proxy/%s", strconv.FormatInt(int64(adminPort), 10), proxyType)
+func GetProxyList(proxyType string) (frps.Proxy, error) {
+	url := fmt.Sprintf(
+		"%s/%s",
+		getUrl("/proxy"),
+		proxyType,
+	)
 
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatalf("Error creating request: %v", err)
+		return frps.Proxy{}, err
 	}
 
-	req.SetBasicAuth(username, password)
+	req.SetBasicAuth(getBasicAuthInfo())
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Error sending request: %v", err)
+		return frps.Proxy{}, err
 	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Fatalf("Error closing response body: %v", err)
-		}
-	}(resp.Body)
+	defer resp.Body.Close()
 
 	var response bytes.Buffer
 	if _, err := io.Copy(&response, resp.Body); err != nil {
-		log.Fatalf("Error reading response body: %v", err)
+		return frps.Proxy{}, err
 	}
 
 	var proxyInfo frps.Proxy
 	body := response.Bytes()
 	err = json.Unmarshal(body, &proxyInfo)
 	if err != nil {
-		log.Fatalf("Error unmarshalling JSON: %v", err)
+		return frps.Proxy{}, err
 	}
-	return proxyInfo
+	return proxyInfo, nil
 }
