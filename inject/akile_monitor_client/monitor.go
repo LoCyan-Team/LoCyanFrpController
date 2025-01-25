@@ -9,9 +9,10 @@ import (
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/net"
+	"go.uber.org/zap"
 	"lcf-controller/inject/akile_monitor_client/model"
+	"lcf-controller/logger"
 	"lcf-controller/pkg/config"
-	"log"
 	"runtime"
 	"strconv"
 	"time"
@@ -23,14 +24,14 @@ func GetState() *model.HostState {
 	var ret model.HostState
 	cp, err := cpu.Percent(0, false)
 	if err != nil || len(cp) == 0 {
-		log.Println("cpu.Percent error:", err)
+		logger.Logger.Warn("cpu.Percent error", zap.Error(err))
 	} else {
 		ret.CPU = cp[0]
 	}
 
 	loadStat, err := load.Avg()
 	if err != nil {
-		log.Println("load.Avg error:", err)
+		logger.Logger.Warn("load.Avg error", zap.Error(err))
 	} else {
 		ret.Load1 = Decimal(loadStat.Load1)
 		ret.Load5 = Decimal(loadStat.Load5)
@@ -40,21 +41,21 @@ func GetState() *model.HostState {
 
 	vm, err := mem.VirtualMemory()
 	if err != nil {
-		log.Println("mem.VirtualMemory error:", err)
+		logger.Logger.Warn("mem.VirtualMemory error", zap.Error(err))
 	} else {
 		ret.MemUsed = vm.Total - vm.Available
 	}
 
 	uptime, err := host.Uptime()
 	if err != nil {
-		log.Println("host.Uptime error:", err)
+		logger.Logger.Warn("host.Uptime error", zap.Error(err))
 	} else {
 		ret.Uptime = uptime
 	}
 
 	swap, err := mem.SwapMemory()
 	if err != nil {
-		log.Println("mem.SwapMemory error:", err)
+		logger.Logger.Warn("mem.SwapMemory error", zap.Error(err))
 	} else {
 		ret.SwapUsed = swap.Used
 	}
@@ -72,7 +73,7 @@ func GetHost() *model.Host {
 	var cpuType string
 	hi, err := host.Info()
 	if err != nil {
-		log.Println("host.Info error:", err)
+		logger.Logger.Warn("host.Info error", zap.Error(err))
 	}
 	cpuType = "Virtual"
 	ret.Platform = hi.Platform
@@ -86,14 +87,14 @@ func GetHost() *model.Host {
 		// 创建 Docker 客户端
 		cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 		if err != nil {
-			log.Println("Failed to create Docker client:", err)
+			logger.Logger.Warn("failed to create Docker client", zap.Error(err))
 		} else {
 			defer cli.Close()
 
 			// 获取 Docker 信息
 			info, err := cli.Info(context.Background())
 			if err != nil {
-				log.Println("Failed to get Docker info:", err)
+				logger.Logger.Warn("Failed to get Docker info", zap.Error(err))
 			} else {
 				// 更新宿主机信息
 				ret.Platform = info.OperatingSystem
@@ -105,17 +106,17 @@ func GetHost() *model.Host {
 
 	ci, err := cpu.Info()
 	if err != nil {
-		log.Println("cpu.Info error:", err)
+		logger.Logger.Warn("cpu.Info error", zap.Error(err))
 	}
 	ret.CPU = append(ret.CPU, fmt.Sprintf("%s %d %s Core", ci[0].ModelName, runtime.NumCPU(), cpuType))
 	vm, err := mem.VirtualMemory()
 	if err != nil {
-		log.Println("mem.VirtualMemory error:", err)
+		logger.Logger.Warn("mem.VirtualMemory error", zap.Error(err))
 	}
 
 	swap, err := mem.SwapMemory()
 	if err != nil {
-		log.Println("mem.SwapMemory error:", err)
+		logger.Logger.Warn("mem.SwapMemory error", zap.Error(err))
 	}
 
 	ret.MemTotal = vm.Total

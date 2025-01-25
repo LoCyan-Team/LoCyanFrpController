@@ -12,7 +12,6 @@ import (
 	"lcf-controller/inject/akile_monitor_client/model"
 	"lcf-controller/logger"
 	"lcf-controller/pkg/config"
-	"log"
 	"os"
 	"os/signal"
 	"time"
@@ -72,19 +71,19 @@ func RunAkileMonitor(cfg config.MonitorConfig) {
 			//gzip压缩json
 			dataBytes, err := json.Marshal(D)
 			if err != nil {
-				log.Println("json.Marshal error:", err)
+				logger.Logger.Error("json.Marshal error", zap.Error(err))
 				return
 			}
 
 			var buf bytes.Buffer
 			gz := gzip.NewWriter(&buf)
 			if _, err := gz.Write(dataBytes); err != nil {
-				log.Println("gzip.Write error:", err)
+				logger.Logger.Error("gzip write error", zap.Error(err))
 				return
 			}
 
 			if err := gz.Close(); err != nil {
-				log.Println("gzip.Close error:", err)
+				logger.Logger.Error("gzip close error", zap.Error(err))
 				return
 			}
 
@@ -95,7 +94,7 @@ func RunAkileMonitor(cfg config.MonitorConfig) {
 				return
 			}
 		case <-interrupt:
-			logger.Logger.Info("Closing status endpoint connection...")
+			logger.Logger.Info("closing status endpoint connection...")
 			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
 				logger.Logger.Error("closing server status to endpoint connection error", zap.Error(err))
