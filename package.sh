@@ -21,17 +21,17 @@ cd ./release
 
 for os in $os_all; do
     for arch in $arch_all; do
-        dir_name="LoCyanFrpController_${version}_${os}_${arch}"
-        controller_path="./packages/LoCyanFrpController_${version}_${os}_${arch}"
+        dir_name="controller_${version}_${os}_${arch}"
+        controller_path="./packages/controller_${version}_${os}_${arch}"
 
         if [ "x${os}" = x"windows" ]; then
-            if [ ! -f "./LoCyanFrpController_${os}_${arch}.exe" ]; then
+            if [ ! -f "./controller_${os}_${arch}.exe" ]; then
                 continue
             fi
             mkdir ${controller_path}
             mv ./LoCyanFrpController_${os}_${arch}.exe ${controller_path}/LoCyanFrpController.exe
         else
-            if [ ! -f "./LoCyanFrpController_${os}_${arch}" ]; then
+            if [ ! -f "./controller_${os}_${arch}" ]; then
                 continue
             fi
             mkdir ${controller_path}
