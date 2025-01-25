@@ -1,0 +1,15 @@
+[common]
+send_duration = 10
+addr = wss://api.locyanfrp.cn/frp/ws
+node_id =
+node_api_key =
+
+[frps]
+username =
+password =
+admin_port =
+
+[monitor]
+addr = wss://status.api.locyanfrp.cn/monitor
+network_device = eth0
+auth_secret =
