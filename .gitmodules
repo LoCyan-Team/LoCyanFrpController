@@ -1,0 +1,3 @@
+[submodule "OpenGFW"]
+	path = OpenGFW
+	url = https://github.com/LoCyan-Team/OpenGFW.git
