@@ -1,8 +1,9 @@
 package config
 
 import (
+	"go.uber.org/zap"
 	"gopkg.in/ini.v1"
-	"log"
+	"lcf-controller/logger"
 	"time"
 )
 
@@ -20,19 +21,19 @@ func ReadCfg() *Config {
 	cfg, err := ini.Load("config.ini")
 
 	if err != nil {
-		log.Fatalf("Failed to read Config File! err: %v", err)
+		logger.Logger.Fatal("read config file failed", zap.Error(err))
 	}
 
 	commonInfo := cfg.Section("common")
 	sendDuration, err := commonInfo.Key("send_duration").Int()
 	if err != nil {
-		log.Fatalf("Parse config file failed!, err: %s", err)
+		logger.Logger.Fatal("parse config file failed", zap.Error(err))
 	}
-	nodeId, err := commonInfo.Key("nodeId").Int()
+	nodeId, err := commonInfo.Key("node_id").Int()
 	if err != nil {
-		log.Fatalf("Parse config file failed!, err: %s", err)
+		logger.Logger.Fatal("parse config file failed", zap.Error(err))
 	}
-	nodeApiKey := commonInfo.Key("nodeApiKey").String()
+	nodeApiKey := commonInfo.Key("node_api_key").String()
 
 	connectInfo := cfg.Section("connection")
 	addr := connectInfo.Key("addr").String()
@@ -40,7 +41,7 @@ func ReadCfg() *Config {
 	password := connectInfo.Key("password").String()
 	adminPort, err := connectInfo.Key("admin_port").Int()
 	if err != nil {
-		log.Fatalf("Parse config file failed!, err: %s", err)
+		logger.Logger.Fatal("parse config file failed", zap.Error(err))
 	}
 
 	config := new(Config)

@@ -1,6 +1,6 @@
-package _type
+package frps
 
-type FrpsServerInfoResponse struct {
+type ServerInfoResponse struct {
 	Version               string         `json:"version"`
 	BindPort              int            `json:"bind_port"`
 	BindUDPPort           int            `json:"bind_udp_port"`

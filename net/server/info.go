@@ -1,18 +1,18 @@
 package server
 
 import (
-	"LoCyanFrpController/pkg/config"
-	_type "LoCyanFrpController/pkg/type"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"lcf-controller/pkg/config"
+	"lcf-controller/pkg/type/frps"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-func GetServerInfo() _type.FrpsServerInfoResponse {
+func GetServerInfo() frps.ServerInfoResponse {
 	configInfo := config.ReadCfg()
 	username := configInfo.Username
 	password := configInfo.Password
@@ -45,7 +45,7 @@ func GetServerInfo() _type.FrpsServerInfoResponse {
 		log.Fatalf("Error reading response body: %v", err)
 	}
 
-	var serverInfo _type.FrpsServerInfoResponse
+	var serverInfo frps.ServerInfoResponse
 	body := response.Bytes()
 	err = json.Unmarshal(body, &serverInfo)
 	if err != nil {
@@ -54,7 +54,7 @@ func GetServerInfo() _type.FrpsServerInfoResponse {
 	return serverInfo
 }
 
-func GetProxyList(proxyType string) _type.Proxy {
+func GetProxyList(proxyType string) frps.Proxy {
 	configInfo := config.ReadCfg()
 	username := configInfo.Username
 	password := configInfo.Password
@@ -87,7 +87,7 @@ func GetProxyList(proxyType string) _type.Proxy {
 		log.Fatalf("Error reading response body: %v", err)
 	}
 
-	var proxyInfo _type.Proxy
+	var proxyInfo frps.Proxy
 	body := response.Bytes()
 	err = json.Unmarshal(body, &proxyInfo)
 	if err != nil {

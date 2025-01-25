@@ -1,10 +1,10 @@
 package info
 
 import (
-	_type "LoCyanFrpController/pkg/type"
+	_frps "lcf-controller/pkg/type/frps"
 )
 
-func GetNodeInfo(info _type.FrpsServerInfoResponse) (data map[string]any) {
+func GetNodeInfo(info _frps.ServerInfoResponse) (data map[string]any) {
 	data = make(map[string]any)
 	inbound := info.TotalTrafficIn
 	outbound := info.TotalTrafficOut

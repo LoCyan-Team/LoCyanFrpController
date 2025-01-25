@@ -1,7 +1,7 @@
 package info
 
 import (
-	"LoCyanFrpController/net/server"
+	"lcf-controller/net/server"
 	"strings"
 )
 

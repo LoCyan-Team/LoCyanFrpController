@@ -1,6 +1,6 @@
-package _type
+package frps
 
-type FrpsProxyInfoResponse struct {
+type ProxyInfoResponse struct {
 	Name            string `json:"name"`
 	Conf            *Conf  `json:"conf"`
 	ClientVersion   string `json:"client_version"`
@@ -13,7 +13,7 @@ type FrpsProxyInfoResponse struct {
 }
 
 type Proxy struct {
-	Proxies []FrpsProxyInfoResponse `json:"proxies"`
+	Proxies []ProxyInfoResponse `json:"proxies"`
 }
 
 // 定义一个结构体来映射配置信息
