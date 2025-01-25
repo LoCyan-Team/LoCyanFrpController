@@ -143,9 +143,9 @@ func createContext() (context.Context, context.CancelFunc) {
 		<-shutdownChan
 		logger.Logger.Info("shutting down gracefully...")
 
-		logger.Logger.Info("closing OpenGFW engine...")
+		logger.Logger.Info("stopping OpenGFW engine...")
 		cancel()
-		logger.Logger.Info("OpenGFW engine closed")
+		logger.Logger.Info("OpenGFW engine stopped")
 
 		os.Exit(0)
 	}()
