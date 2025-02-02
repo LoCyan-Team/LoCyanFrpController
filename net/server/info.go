@@ -21,8 +21,8 @@ func getBasicAuthInfo() (string, string) {
 func getUrl(path string) string {
 	return fmt.Sprintf(
 		"http://%s:%s/api%s",
-		cfg.Host,
-		strconv.FormatInt(int64(cfg.AdminPort), 10),
+		cfg.AdminApiHost,
+		strconv.FormatInt(int64(cfg.AdminApiPort), 10),
 		path,
 	)
 }

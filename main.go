@@ -45,9 +45,8 @@ func (w *WsClient) SendMsg(cfg *config.Config, action string, data map[string]an
 	req.Data = data
 	msg, err := json.Marshal(req)
 	err = w.conn.WriteMessage(websocket.TextMessage, msg)
-
 	if err != nil {
-		logger.Logger.Fatal("failed to send message", zap.Error(err))
+		return err
 	}
 
 	return nil

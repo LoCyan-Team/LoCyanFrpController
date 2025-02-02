@@ -21,10 +21,10 @@ type ControllerConfig struct {
 }
 
 type FrpServerConfig struct {
-	Host      string
-	AdminPort int
-	Username  string
-	Password  string
+	Username     string
+	Password     string
+	AdminApiHost string
+	AdminApiPort int
 }
 
 type MonitorConfig struct {
@@ -61,14 +61,14 @@ func ReadCfg() *Config {
 	// Frp Server
 	frpsInfo := cfg.Section("frps")
 	frpServerCfg := new(FrpServerConfig)
-	adminPort, err := frpsInfo.Key("admin_port").Int()
+	frpServerCfg.Username = frpsInfo.Key("username").String()
+	frpServerCfg.Password = frpsInfo.Key("password").String()
+	frpServerCfg.AdminApiHost = frpsInfo.Key("admin_api_host").String()
+	adminApiPort, err := frpsInfo.Key("admin_api_port").Int()
 	if err != nil {
 		logger.Logger.Fatal("parse config file failed", zap.Error(err))
 	}
-	frpServerCfg.Host = frpsInfo.Key("host").String()
-	frpServerCfg.AdminPort = adminPort
-	frpServerCfg.Username = frpsInfo.Key("username").String()
-	frpServerCfg.Password = frpsInfo.Key("password").String()
+	frpServerCfg.AdminApiPort = adminApiPort
 
 	// Monitor
 	monitorInfo := cfg.Section("monitor")

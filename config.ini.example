@@ -7,7 +7,8 @@ node_api_key =
 [frps]
 username =
 password =
-admin_port =
+admin_api_host =
+admin_api_port =
 
 [monitor]
 name =
