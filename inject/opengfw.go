@@ -9,11 +9,14 @@ import (
 	"go.uber.org/zap"
 	"lcf-controller/inject/opengfw"
 	"lcf-controller/logger"
+	"lcf-controller/pkg/config"
 )
 
-const (
-	configFile = "opengfw-config.yml"
-	rulesFile  = "opengfw-rules.yml"
+var cfg = config.ReadCfg()
+
+var (
+	configFile = cfg.OpenGFWConfig.ConfigFilePath
+	rulesFile  = cfg.OpenGFWConfig.RulesetFilePath
 )
 
 // RunOpenGFW 运行 OpenGFW 引擎
@@ -21,15 +24,15 @@ func RunOpenGFW(ctx context.Context) {
 	// Config
 	viper.SetConfigFile(configFile)
 	if err := viper.ReadInConfig(); err != nil {
-		logger.Logger.Fatal("failed to read OpenGFW config", zap.Error(err))
+		logger.Logger.Fatal("failed to read OpenGFW opengfwCliCfg", zap.Error(err))
 	}
-	var config opengfw.CliConfig
-	if err := viper.Unmarshal(&config); err != nil {
-		logger.Logger.Fatal("failed to parse OpenGFW config", zap.Error(err))
+	var opengfwCliCfg opengfw.CliConfig
+	if err := viper.Unmarshal(&opengfwCliCfg); err != nil {
+		logger.Logger.Fatal("failed to parse OpenGFW opengfwCliCfg", zap.Error(err))
 	}
-	engineConfig, err := config.Config()
+	engineConfig, err := opengfwCliCfg.Config()
 	if err != nil {
-		logger.Logger.Fatal("failed to parse OpenGFW config", zap.Error(err))
+		logger.Logger.Fatal("failed to parse OpenGFW opengfwCliCfg", zap.Error(err))
 	}
 	defer engineConfig.IO.Close() // Make sure to close IO on exit
 
@@ -40,7 +43,7 @@ func RunOpenGFW(ctx context.Context) {
 	}
 	rsConfig := &ruleset.BuiltinConfig{
 		Logger:               &opengfw.RulesetLogger{},
-		GeoMatcher:           geo.NewGeoMatcher(config.Ruleset.GeoSite, config.Ruleset.GeoIp),
+		GeoMatcher:           geo.NewGeoMatcher(opengfwCliCfg.Ruleset.GeoSite, opengfwCliCfg.Ruleset.GeoIp),
 		ProtectedDialContext: engineConfig.IO.ProtectedDialContext,
 	}
 	rs, err := ruleset.CompileExprRules(rawRs, opengfw.Analyzers, opengfw.Modifiers, rsConfig)

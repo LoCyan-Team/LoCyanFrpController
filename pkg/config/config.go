@@ -30,7 +30,9 @@ type FrpServerConfig struct {
 }
 
 type OpenGFWConfig struct {
-	Enable bool
+	Enable          bool
+	ConfigFilePath  string
+	RulesetFilePath string
 }
 
 type MonitorConfig struct {
@@ -90,6 +92,8 @@ func ReadCfg() *Config {
 		logger.Logger.Fatal("parse config file failed", zap.Error(err))
 	}
 	opengfwCfg.Enable = opengfwEnable
+	opengfwCfg.ConfigFilePath = opengfwInfo.Key("config_file").String()
+	opengfwCfg.RulesetFilePath = opengfwInfo.Key("ruleset_file").String()
 
 	// Monitor
 	monitorInfo := cfg.Section("monitor")

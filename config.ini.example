@@ -13,6 +13,8 @@ admin_api_port =
 
 [opengfw]
 enable =
+config_file =
+ruleset_file =
 
 [monitor]
 name =
