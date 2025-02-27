@@ -10,10 +10,12 @@ import (
 type Config struct {
 	ControllerConfig ControllerConfig
 	FrpServerConfig  FrpServerConfig
+	OpenGFWConfig    OpenGFWConfig
 	MonitorConfig    MonitorConfig
 }
 
 type ControllerConfig struct {
+	Enable       bool
 	Addr         string
 	SendDuration time.Duration
 	NodeId       int
@@ -27,8 +29,13 @@ type FrpServerConfig struct {
 	AdminApiPort int
 }
 
+type OpenGFWConfig struct {
+	Enable bool
+}
+
 type MonitorConfig struct {
 	Name          string
+	Enable        bool
 	Addr          string
 	NetworkDevice string
 	AuthSecret    string
@@ -45,6 +52,11 @@ func ReadCfg() *Config {
 	// Controller
 	commonInfo := cfg.Section("common")
 	controllerCfg := new(ControllerConfig)
+	commonEnable, err := commonInfo.Key("enable").Bool()
+	if err != nil {
+		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+	}
+	controllerCfg.Enable = commonEnable
 	controllerCfg.Addr = commonInfo.Key("addr").String()
 	sendDuration, err := commonInfo.Key("send_duration").Int()
 	if err != nil {
@@ -70,16 +82,31 @@ func ReadCfg() *Config {
 	}
 	frpServerCfg.AdminApiPort = adminApiPort
 
+	// OpenGFW
+	opengfwInfo := cfg.Section("opengfw")
+	opengfwCfg := new(OpenGFWConfig)
+	opengfwEnable, err := opengfwInfo.Key("enable").Bool()
+	if err != nil {
+		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+	}
+	opengfwCfg.Enable = opengfwEnable
+
 	// Monitor
 	monitorInfo := cfg.Section("monitor")
 	monitorCfg := new(MonitorConfig)
 	monitorCfg.Name = monitorInfo.Key("name").String()
+	monitorEnable, err := monitorInfo.Key("enable").Bool()
+	if err != nil {
+		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+	}
+	monitorCfg.Enable = monitorEnable
 	monitorCfg.Addr = monitorInfo.Key("addr").String()
 	monitorCfg.NetworkDevice = monitorInfo.Key("network_device").String()
 	monitorCfg.AuthSecret = monitorInfo.Key("auth_secret").String()
 
 	config.ControllerConfig = *controllerCfg
 	config.FrpServerConfig = *frpServerCfg
+	config.OpenGFWConfig = *opengfwCfg
 	config.MonitorConfig = *monitorCfg
 	return config
 }

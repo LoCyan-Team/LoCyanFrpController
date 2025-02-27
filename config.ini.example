@@ -1,4 +1,5 @@
 [common]
+enable =
 send_duration = 10
 addr = wss://api.locyanfrp.cn/frp/ws
 node_id =
@@ -10,8 +11,12 @@ password =
 admin_api_host =
 admin_api_port =
 
+[opengfw]
+enable =
+
 [monitor]
 name =
+enable =
 addr = wss://status.api.locyanfrp.cn/monitor
 network_device = eth0
 auth_secret =

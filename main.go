@@ -161,49 +161,60 @@ func main() {
 
 	cfg := config.ReadCfg()
 
-	ctx, _ := createContext()
-	go inject.RunOpenGFW(ctx)
+	if cfg.OpenGFWConfig.Enable {
+		ctx, _ := createContext()
+		go inject.RunOpenGFW(ctx)
+	}
 
-	go inject.RunAkileMonitor(cfg.MonitorConfig)
+	if cfg.MonitorConfig.Enable {
+		go inject.RunAkileMonitor(cfg.MonitorConfig)
+	}
 
-	ws := NewWebSocket()
-	logger.Logger.Info("connecting to WebSocket endpoint...")
-	err := ws.ConnectWsServer()
-	if err != nil {
-		logger.Logger.Fatal(
-			"can't connect to WebSocket server",
-			zap.Error(err),
-		)
-	} else {
-		logger.Logger.Info("connect to WebSocket server successfully")
-		defer func(conn *websocket.Conn) {
-			err := conn.Close()
-			if err != nil {
-				logger.Logger.Fatal(
-					"can't close WebSocket connection",
-					zap.Error(err),
-				)
-			}
-		}(ws.conn)
-		go ws.ReadMsg()
-		ticker := time.NewTicker(cfg.ControllerConfig.SendDuration)
-		defer ticker.Stop()
-
-		serverInfo, err := server.GetServerInfo()
+	if cfg.ControllerConfig.Enable {
+		ws := NewWebSocket()
+		logger.Logger.Info("connecting to WebSocket endpoint...")
+		err := ws.ConnectWsServer()
 		if err != nil {
-			logger.Logger.Error("can't get server info", zap.Error(err))
+			logger.Logger.Fatal(
+				"can't connect to WebSocket server",
+				zap.Error(err),
+			)
 		} else {
-			ws.sendNodeStatsToServer(cfg, serverInfo)
-			ws.sendProxyStatsToServer(cfg)
-		}
+			logger.Logger.Info("connect to WebSocket server successfully")
+			defer func(conn *websocket.Conn) {
+				err := conn.Close()
+				if err != nil {
+					logger.Logger.Fatal(
+						"can't close WebSocket connection",
+						zap.Error(err),
+					)
+				}
+			}(ws.conn)
+			go ws.ReadMsg()
+			ticker := time.NewTicker(cfg.ControllerConfig.SendDuration)
+			defer ticker.Stop()
 
-		for range ticker.C {
+			serverInfo, err := server.GetServerInfo()
 			if err != nil {
 				logger.Logger.Error("can't get server info", zap.Error(err))
 			} else {
 				ws.sendNodeStatsToServer(cfg, serverInfo)
 				ws.sendProxyStatsToServer(cfg)
 			}
+
+			for range ticker.C {
+				if err != nil {
+					logger.Logger.Error("can't get server info", zap.Error(err))
+				} else {
+					ws.sendNodeStatsToServer(cfg, serverInfo)
+					ws.sendProxyStatsToServer(cfg)
+				}
+			}
+		}
+	} else {
+		ticker := time.NewTicker(cfg.ControllerConfig.SendDuration)
+		defer ticker.Stop()
+		for range ticker.C {
 		}
 	}
 }
