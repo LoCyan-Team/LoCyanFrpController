@@ -12,6 +12,7 @@ import (
 	"lcf-controller/inject/akile_monitor_client/model"
 	"lcf-controller/logger"
 	"lcf-controller/pkg/config"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -33,7 +34,9 @@ func RunAkileMonitor(cfg config.MonitorConfig) {
 
 	logger.Logger.Info("connecting to status WebSocket endpoint...")
 
-	c, _, err := websocket.DefaultDialer.Dial(cfg.Addr, nil)
+	headers := http.Header{}
+	headers.Set("User-Agent", "LoCyanFrp/1.0 (Controller; Status Report)")
+	c, _, err := websocket.DefaultDialer.Dial(cfg.Addr, headers)
 	if err != nil {
 		logger.Logger.Fatal("error dial status endpoint", zap.Error(err))
 	}
