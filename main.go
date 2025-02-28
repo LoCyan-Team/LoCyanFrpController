@@ -74,11 +74,13 @@ func (w *WsClient) ReadMsg() {
 		if err != nil {
 			logger.Logger.Error("can't unmarshal json message", zap.Error(err))
 		}
-		if msgJson.Status != 200 {
-			logger.Logger.Error("error Message from server", zap.String("msg", string(msg)))
-		}
-		if msgJson.Status == 200 {
-			logger.Logger.Debug("Received message from server", zap.String("msg", string(msg)))
+		switch msgJson.Status {
+		case 200:
+			logger.Logger.Debug("received message from server", zap.String("msg", string(msg)))
+		case 401:
+			logger.Logger.Fatal("API reported unauthorized")
+		default:
+			logger.Logger.Error("error message from server", zap.String("msg", string(msg)))
 		}
 	}
 }
