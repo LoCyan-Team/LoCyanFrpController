@@ -93,7 +93,7 @@ func RunAkileMonitor(cfg config.MonitorConfig) {
 			err = c.WriteMessage(websocket.TextMessage, buf.Bytes())
 			if err != nil {
 				logger.Logger.Error("reporting server status to endpoint error", zap.Error(err))
-				RunAkileMonitor(cfg)
+				go RunAkileMonitor(cfg)
 				return
 			}
 		case <-interrupt:
