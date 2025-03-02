@@ -14,7 +14,7 @@ make -f ./Makefile.cross-compiles
 rm -rf ./release/packages
 mkdir -p ./release/packages
 
-os_all='linux windows darwin freebsd'
+os_all='linux'
 arch_all='386 amd64 arm arm64 mips64 mips64le mips mipsle riscv64'
 
 cd ./release
@@ -24,27 +24,15 @@ for os in $os_all; do
         dir_name="controller_${version}_${os}_${arch}"
         controller_path="./packages/controller_${version}_${os}_${arch}"
 
-        if [ "x${os}" = x"windows" ]; then
-            if [ ! -f "./controller_${os}_${arch}.exe" ]; then
-                continue
-            fi
-            mkdir ${controller_path}
-            mv ./controller_${os}_${arch}.exe ${controller_path}/controller.exe
-        else
-            if [ ! -f "./controller_${os}_${arch}" ]; then
-                continue
-            fi
-            mkdir ${controller_path}
-            mv ./controller_${os}_${arch} ${controller_path}/controller
-        fi  
+        if [ ! -f "./controller_${os}_${arch}" ]; then
+            continue
+        fi
+        mkdir ${controller_path}
+        mv ./controller_${os}_${arch} ${controller_path}/controller
 
         # packages
         cd ./packages
-        if [ "x${os}" = x"windows" ]; then
-            zip -rq ${dir_name}.zip ${dir_name}
-        else
-            tar -zcf ${dir_name}.tar.gz ${dir_name}
-        fi  
+        tar -zcf ${dir_name}.tar.gz ${dir_name}
         cd ..
         rm -rf ${controller_path}
     done
