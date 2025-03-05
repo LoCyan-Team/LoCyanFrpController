@@ -8,7 +8,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/henrylee2cn/goutil v1.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
-	github.com/spf13/viper v1.18.2
+	github.com/spf13/viper v1.19.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/ini.v1 v1.67.0
 )
