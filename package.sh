@@ -5,7 +5,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-version=0.0.2
+version=0.0.3
 echo "build version: $version"
 
 # cross_compiles
