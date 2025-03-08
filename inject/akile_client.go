@@ -3,6 +3,7 @@ package inject
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/json"
 	"flag"
 	"github.com/gorilla/websocket"
@@ -13,54 +14,75 @@ import (
 	"lcf-controller/logger"
 	"lcf-controller/pkg/config"
 	"net/http"
-	"os"
-	"os/signal"
 	"time"
 )
 
-func RunAkileMonitor(cfg config.MonitorConfig) {
+var conn *websocket.Conn
+
+// 封装连接函数
+func connectEndpoint(cfg config.MonitorConfig) (ws *websocket.Conn, err error) {
+	logger.Logger.Info("connecting to status endpoint...")
+
+	headers := http.Header{}
+	headers.Set("User-Agent", "LoCyanFrp/1.0 (Controller; Status Report)")
+	c, _, err := websocket.DefaultDialer.Dial(cfg.Addr, headers)
+	return c, err
+}
+
+func RunAkileMonitor(ctx context.Context, cfg config.MonitorConfig) {
 	go func() {
 		c := cron.New()
-		c.AddFunc("* * * * * *", func() {
+		if err := c.AddFunc("* * * * * *", func() {
 			akile_monitor_client.TrackNetworkSpeed()
-		})
+		}); err != nil {
+			logger.Logger.Fatal("failed to run monitor cronjob", zap.Error(err))
+		}
 		c.Start()
 	}()
 
 	flag.Parse()
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
+	connect := func() {
+		for {
+			wsc, err := connectEndpoint(cfg)
+			if err != nil {
+				logger.Logger.Error("error dial status endpoint", zap.Error(err))
+				time.Sleep(5 * time.Second)
+				continue
+			}
+			conn = wsc
 
-	logger.Logger.Info("connecting to status WebSocket endpoint...")
+			_ = conn.WriteMessage(websocket.TextMessage, []byte(cfg.AuthSecret))
+			_, message, err := conn.ReadMessage()
+			if err != nil {
+				logger.Logger.Error("error while status endpoint authentication", zap.Error(err))
+				conn.Close()
+				time.Sleep(5 * time.Second)
+				continue
+			}
 
-	headers := http.Header{}
-	headers.Set("User-Agent", "LoCyanFrp/1.0 (Controller; Status Report)")
-	c, _, err := websocket.DefaultDialer.Dial(cfg.Addr, headers)
-	if err != nil {
-		logger.Logger.Fatal("error dial status endpoint", zap.Error(err))
+			if string(message) == "auth success" {
+				logger.Logger.Info("connect to status endpoint successfully")
+				break
+			} else {
+				logger.Logger.Error("status endpoint authentication failed, please check your configuration", zap.Error(err))
+				conn.Close()
+				time.Sleep(5 * time.Second)
+				continue
+			}
+		}
 	}
-	defer c.Close()
 
-	c.WriteMessage(websocket.TextMessage, []byte(cfg.AuthSecret))
-
-	done := make(chan struct{})
-
-	_, message, err := c.ReadMessage()
-	if err != nil {
-		logger.Logger.Error("invalid auth secret, please check your configuration", zap.Error(err))
-		return
-	}
-	if string(message) == "auth success" {
-		logger.Logger.Info("connect to status WebSocket server successfully")
-	}
+	// 初始化连接
+	connect()
+	defer conn.Close()
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-done:
+		case <-ctx.Done():
 			return
 		case t := <-ticker.C:
 			var D struct {
@@ -71,43 +93,33 @@ func RunAkileMonitor(cfg config.MonitorConfig) {
 			D.Host = akile_monitor_client.GetHost()
 			D.State = akile_monitor_client.GetState()
 			D.TimeStamp = t.Unix()
-			//gzip压缩json
+
+			// gzip压缩json
 			dataBytes, err := json.Marshal(D)
 			if err != nil {
 				logger.Logger.Error("json.Marshal error", zap.Error(err))
-				return
+				continue
 			}
 
 			var buf bytes.Buffer
 			gz := gzip.NewWriter(&buf)
 			if _, err := gz.Write(dataBytes); err != nil {
 				logger.Logger.Error("gzip write error", zap.Error(err))
-				return
+				continue
 			}
 
 			if err := gz.Close(); err != nil {
 				logger.Logger.Error("gzip close error", zap.Error(err))
-				return
+				continue
 			}
 
-			err = c.WriteMessage(websocket.TextMessage, buf.Bytes())
+			// 发送数据
+			err = conn.WriteMessage(websocket.TextMessage, buf.Bytes())
 			if err != nil {
 				logger.Logger.Error("reporting server status to endpoint error", zap.Error(err))
-				go RunAkileMonitor(cfg)
-				return
+				conn.Close()
+				connect()
 			}
-		case <-interrupt:
-			logger.Logger.Info("closing status endpoint connection...")
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				logger.Logger.Error("closing server status to endpoint connection error", zap.Error(err))
-				return
-			}
-			select {
-			case <-done:
-			case <-time.After(time.Second):
-			}
-			return
 		}
 	}
 }

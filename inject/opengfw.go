@@ -12,17 +12,10 @@ import (
 	"lcf-controller/pkg/config"
 )
 
-var cfg = config.ReadCfg()
-
-var (
-	configFile = cfg.OpenGFWConfig.ConfigFilePath
-	rulesFile  = cfg.OpenGFWConfig.RulesetFilePath
-)
-
 // RunOpenGFW 运行 OpenGFW 引擎
-func RunOpenGFW(ctx context.Context) {
+func RunOpenGFW(ctx context.Context, cfg config.OpenGFWConfig) {
 	// Config
-	viper.SetConfigFile(configFile)
+	viper.SetConfigFile(cfg.ConfigFilePath)
 	if err := viper.ReadInConfig(); err != nil {
 		logger.Logger.Fatal("failed to read OpenGFW opengfwCliCfg", zap.Error(err))
 	}
@@ -37,7 +30,7 @@ func RunOpenGFW(ctx context.Context) {
 	defer engineConfig.IO.Close() // Make sure to close IO on exit
 
 	// Ruleset
-	rawRs, err := ruleset.ExprRulesFromYAML(rulesFile)
+	rawRs, err := ruleset.ExprRulesFromYAML(cfg.RulesetFilePath)
 	if err != nil {
 		logger.Logger.Fatal("failed to load OpenGFW rules", zap.Error(err))
 	}

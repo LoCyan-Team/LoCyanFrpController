@@ -144,9 +144,9 @@ func createContext() (context.Context, context.CancelFunc) {
 		<-shutdownChan
 		logger.Logger.Info("shutting down gracefully...")
 
-		logger.Logger.Info("stopping OpenGFW engine...")
+		logger.Logger.Info("stopping workers...")
 		cancel()
-		logger.Logger.Info("OpenGFW engine stopped")
+		logger.Logger.Info("engine stopped")
 
 		os.Exit(0)
 	}()
@@ -163,13 +163,12 @@ func main() {
 
 	cfg := config.ReadCfg()
 
+	ctx, _ := createContext()
 	if cfg.OpenGFWConfig.Enable {
-		ctx, _ := createContext()
-		go inject.RunOpenGFW(ctx)
+		go inject.RunOpenGFW(ctx, cfg.OpenGFWConfig)
 	}
-
 	if cfg.MonitorConfig.Enable {
-		go inject.RunAkileMonitor(cfg.MonitorConfig)
+		go inject.RunAkileMonitor(ctx, cfg.MonitorConfig)
 	}
 
 	if cfg.ControllerConfig.Enable {
