@@ -1,9 +1,10 @@
 module lcf-controller
 
 go 1.23.1
+
 require (
 	github.com/apernet/OpenGFW v0.4.1
-	github.com/docker/docker v27.5.1+incompatible
+	github.com/docker/docker v28.1.1+incompatible
 	github.com/gorilla/websocket v1.5.3
 	github.com/henrylee2cn/goutil v1.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
@@ -38,6 +39,7 @@ require (
 	github.com/mdlayher/netlink v1.6.0 // indirect
 	github.com/mdlayher/socket v0.1.1 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
+	github.com/moby/sys/atomicwriter v0.1.0 // indirect
 	github.com/moby/term v0.5.2 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
