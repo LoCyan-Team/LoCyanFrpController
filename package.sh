@@ -30,43 +30,34 @@ for os in $os_all; do
             if [ "x${extra}" != x"_" ]; then
                 suffix="${os}_${arch}_${extra}"
             fi
-            frp_dir_name="frp_${controller_version}_${suffix}"
-            frp_path="./packages/frp_${controller_version}_${suffix}"
+            controller_dir_name="controller_${controller_version}_${suffix}"
+            controller_path="./packages/controller_${controller_version}_${suffix}"
 
             if [ "x${os}" = x"windows" ]; then
-                if [ ! -f "./frpc_${os}_${arch}.exe" ]; then
+                if [ ! -f "./controller_${os}_${arch}.exe" ]; then
                     continue
                 fi
-                if [ ! -f "./frps_${os}_${arch}.exe" ]; then
-                    continue
-                fi
-                mkdir ${frp_path}
-                mv ./frpc_${os}_${arch}.exe ${frp_path}/frpc.exe
-                mv ./frps_${os}_${arch}.exe ${frp_path}/frps.exe
+                mkdir ${controller_path}
+                mv ./controller_${os}_${arch}.exe ${controller_path}/controller.exe
             else
-                if [ ! -f "./frpc_${suffix}" ]; then
+                if [ ! -f "./controller_${suffix}" ]; then
                     continue
                 fi
-                if [ ! -f "./frps_${suffix}" ]; then
-                    continue
-                fi
-                mkdir ${frp_path}
-                mv ./frpc_${suffix} ${frp_path}/frpc
-                mv ./frps_${suffix} ${frp_path}/frps
+                mkdir ${controller_path}
+                mv ./controller_${suffix} ${controller_path}/controller
             fi  
-            cp ../LICENSE ${frp_path}
-            cp -f ../conf/frpc.toml ${frp_path}
-            cp -f ../conf/frps.toml ${frp_path}
+            cp ../LICENSE ${controller_path}
+            cp -f ../config.ini.example ${controller_path}
 
             # packages
             cd ./packages
             if [ "x${os}" = x"windows" ]; then
-                zip -rq ${frp_dir_name}.zip ${frp_dir_name}
+                zip -rq ${controller_dir_name}.zip ${controller_dir_name}
             else
-                tar -zcf ${frp_dir_name}.tar.gz ${frp_dir_name}
+                tar -zcf ${controller_dir_name}.tar.gz ${controller_dir_name}
             fi  
             cd ..
-            rm -rf ${frp_path}
+            rm -rf ${controller_path}
         done
     done
 done
