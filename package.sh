@@ -8,7 +8,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-controller_version=`0.0.4`
+controller_version="0.0.4"
 echo "build version: $controller_version"
 
 # cross_compiles
