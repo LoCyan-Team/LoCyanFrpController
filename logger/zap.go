@@ -11,7 +11,7 @@ import (
 var logLevel = "info"
 var logFormat = "console"
 
-var logger *zap.Logger
+var zapLogger *zap.Logger
 
 var LogLevelMap = map[string]zapcore.Level{
 	"debug": zapcore.DebugLevel,
@@ -33,7 +33,7 @@ var LogFormatMap = map[string]zapcore.EncoderConfig{
 	},
 }
 
-func InitLogger() {
+func init() {
 	level, ok := LogLevelMap[strings.ToLower(logLevel)]
 	if !ok {
 		fmt.Printf("unsupported log level: %s\n", logLevel)
@@ -54,7 +54,7 @@ func InitLogger() {
 		ErrorOutputPaths:  []string{"stderr"},
 	}
 	var err error
-	logger, err = c.Build()
+	zapLogger, err = c.Build()
 	if err != nil {
 		fmt.Printf("failed to initialize logger: %s\n", err)
 		os.Exit(1)

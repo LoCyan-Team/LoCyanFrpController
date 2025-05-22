@@ -154,8 +154,6 @@ func createContext() (context.Context, context.CancelFunc) {
 }
 
 func main() {
-	logger.InitLogger()
-
 	if runtime.GOOS != "windows" && os.Getuid() != 0 {
 		logger.Fatal("please run as root user")
 		return
