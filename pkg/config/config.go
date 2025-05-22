@@ -46,7 +46,7 @@ type MonitorConfig struct {
 func ReadCfg() *Config {
 	cfg, err := ini.Load("config.ini")
 	if err != nil {
-		logger.Logger.Fatal("read config file failed", zap.Error(err))
+		logger.Fatal("read config file failed", zap.Error(err))
 	}
 
 	config := new(Config)
@@ -56,18 +56,18 @@ func ReadCfg() *Config {
 	controllerCfg := new(ControllerConfig)
 	commonEnable, err := commonInfo.Key("enable").Bool()
 	if err != nil {
-		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+		logger.Fatal("parse config file failed", zap.Error(err))
 	}
 	controllerCfg.Enable = commonEnable
 	controllerCfg.Addr = commonInfo.Key("addr").String()
 	sendDuration, err := commonInfo.Key("send_duration").Int()
 	if err != nil {
-		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+		logger.Fatal("parse config file failed", zap.Error(err))
 	}
 	controllerCfg.SendDuration = time.Duration(sendDuration) * time.Second
 	nodeId, err := commonInfo.Key("node_id").Int()
 	if err != nil {
-		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+		logger.Fatal("parse config file failed", zap.Error(err))
 	}
 	controllerCfg.NodeId = nodeId
 	controllerCfg.NodeApiKey = commonInfo.Key("node_api_key").String()
@@ -80,7 +80,7 @@ func ReadCfg() *Config {
 	frpServerCfg.AdminApiHost = frpsInfo.Key("admin_api_host").String()
 	adminApiPort, err := frpsInfo.Key("admin_api_port").Int()
 	if err != nil {
-		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+		logger.Fatal("parse config file failed", zap.Error(err))
 	}
 	frpServerCfg.AdminApiPort = adminApiPort
 
@@ -89,7 +89,7 @@ func ReadCfg() *Config {
 	opengfwCfg := new(OpenGFWConfig)
 	opengfwEnable, err := opengfwInfo.Key("enable").Bool()
 	if err != nil {
-		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+		logger.Fatal("parse config file failed", zap.Error(err))
 	}
 	opengfwCfg.Enable = opengfwEnable
 	opengfwCfg.ConfigFilePath = opengfwInfo.Key("config_file").String()
@@ -101,7 +101,7 @@ func ReadCfg() *Config {
 	monitorCfg.Name = monitorInfo.Key("name").String()
 	monitorEnable, err := monitorInfo.Key("enable").Bool()
 	if err != nil {
-		logger.Logger.Fatal("parse config file failed", zap.Error(err))
+		logger.Fatal("parse config file failed", zap.Error(err))
 	}
 	monitorCfg.Enable = monitorEnable
 	monitorCfg.Addr = monitorInfo.Key("addr").String()

@@ -21,7 +21,7 @@ var conn *websocket.Conn
 
 // 封装连接函数
 func connectEndpoint(cfg config.MonitorConfig) (ws *websocket.Conn, err error) {
-	logger.Logger.Info("connecting to status endpoint...")
+	logger.Info("connecting to status endpoint...")
 
 	headers := http.Header{}
 	headers.Set("User-Agent", "LoCyanFrp/1.0 (Controller; Status Report)")
@@ -35,7 +35,7 @@ func RunAkileMonitor(ctx context.Context, cfg config.MonitorConfig) {
 		if err := c.AddFunc("* * * * * *", func() {
 			akile_monitor_client.TrackNetworkSpeed()
 		}); err != nil {
-			logger.Logger.Fatal("failed to run monitor cronjob", zap.Error(err))
+			logger.Fatal("failed to run monitor cronjob", zap.Error(err))
 		}
 		c.Start()
 	}()
@@ -46,7 +46,7 @@ func RunAkileMonitor(ctx context.Context, cfg config.MonitorConfig) {
 		for {
 			wsc, err := connectEndpoint(cfg)
 			if err != nil {
-				logger.Logger.Error("error dial status endpoint", zap.Error(err))
+				logger.Error("error dial status endpoint", zap.Error(err))
 				time.Sleep(5 * time.Second)
 				continue
 			}
@@ -55,17 +55,17 @@ func RunAkileMonitor(ctx context.Context, cfg config.MonitorConfig) {
 			_ = conn.WriteMessage(websocket.TextMessage, []byte(cfg.AuthSecret))
 			_, message, err := conn.ReadMessage()
 			if err != nil {
-				logger.Logger.Error("error while status endpoint authentication", zap.Error(err))
+				logger.Error("error while status endpoint authentication", zap.Error(err))
 				conn.Close()
 				time.Sleep(5 * time.Second)
 				continue
 			}
 
 			if string(message) == "auth success" {
-				logger.Logger.Info("connect to status endpoint successfully")
+				logger.Info("connect to status endpoint successfully")
 				break
 			} else {
-				logger.Logger.Error("status endpoint authentication failed, please check your configuration", zap.Error(err))
+				logger.Error("status endpoint authentication failed, please check your configuration", zap.Error(err))
 				conn.Close()
 				time.Sleep(5 * time.Second)
 				continue
@@ -97,26 +97,26 @@ func RunAkileMonitor(ctx context.Context, cfg config.MonitorConfig) {
 			// gzip压缩json
 			dataBytes, err := json.Marshal(D)
 			if err != nil {
-				logger.Logger.Error("json.Marshal error", zap.Error(err))
+				logger.Error("json.Marshal error", zap.Error(err))
 				continue
 			}
 
 			var buf bytes.Buffer
 			gz := gzip.NewWriter(&buf)
 			if _, err := gz.Write(dataBytes); err != nil {
-				logger.Logger.Error("gzip write error", zap.Error(err))
+				logger.Error("gzip write error", zap.Error(err))
 				continue
 			}
 
 			if err := gz.Close(); err != nil {
-				logger.Logger.Error("gzip close error", zap.Error(err))
+				logger.Error("gzip close error", zap.Error(err))
 				continue
 			}
 
 			// 发送数据
 			err = conn.WriteMessage(websocket.TextMessage, buf.Bytes())
 			if err != nil {
-				logger.Logger.Error("reporting server status to endpoint error", zap.Error(err))
+				logger.Error("reporting server status to endpoint error", zap.Error(err))
 				conn.Close()
 				connect()
 			}

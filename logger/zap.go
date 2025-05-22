@@ -11,7 +11,7 @@ import (
 var logLevel = "info"
 var logFormat = "console"
 
-var Logger *zap.Logger
+var logger *zap.Logger
 
 var LogLevelMap = map[string]zapcore.Level{
 	"debug": zapcore.DebugLevel,
@@ -54,7 +54,7 @@ func InitLogger() {
 		ErrorOutputPaths:  []string{"stderr"},
 	}
 	var err error
-	Logger, err = c.Build()
+	logger, err = c.Build()
 	if err != nil {
 		fmt.Printf("failed to initialize logger: %s\n", err)
 		os.Exit(1)

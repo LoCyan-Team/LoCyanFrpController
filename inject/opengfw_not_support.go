@@ -10,5 +10,5 @@ import (
 
 // RunOpenGFW 运行 OpenGFW 引擎
 func RunOpenGFW(_ context.Context, _ config.OpenGFWConfig) {
-	logger.Logger.Fatal("OpenGFW engine is not supported on this platform")
+	logger.Fatal("OpenGFW engine is not supported on this platform")
 }
