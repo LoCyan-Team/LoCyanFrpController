@@ -4,7 +4,7 @@ go 1.23.1
 
 require (
 	github.com/apernet/OpenGFW v0.4.1
-	github.com/docker/docker v28.1.1+incompatible
+	github.com/docker/docker v28.2.2+incompatible
 	github.com/gorilla/websocket v1.5.3
 	github.com/henrylee2cn/goutil v1.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
@@ -17,6 +17,8 @@ require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/andeya/goutil v1.0.1 // indirect
 	github.com/bwmarrin/snowflake v0.3.0 // indirect
+	github.com/containerd/errdefs v1.0.0 // indirect
+	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/coreos/go-iptables v0.7.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
