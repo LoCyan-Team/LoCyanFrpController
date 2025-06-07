@@ -44,8 +44,7 @@ func (w *WsClient) SendMsg(cfg *config.Config, action string, data map[string]an
 	req.Node.ApiKey = cfg.ControllerConfig.NodeApiKey
 	req.Data = data
 	msg, err := json.Marshal(req)
-	err = w.conn.WriteMessage(websocket.TextMessage, msg)
-	if err != nil {
+	if err := w.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 		return err
 	}
 
@@ -70,10 +69,10 @@ func (w *WsClient) ReadMsg() {
 			break
 		}
 		var msgJson WsResponse
-		err = json.Unmarshal(msg, &msgJson)
-		if err != nil {
-			logger.Error("can't unmarshal json message", zap.Error(err))
-		}
+		if err := json.Unmarshal(msg, &msgJson); err != nil {
+		logger.Error("can't unmarshal json message", zap.Error(err))
+		continue
+	}
 		switch msgJson.Status {
 		case 200:
 			logger.Debug("received message from server", zap.String("msg", string(msg)))

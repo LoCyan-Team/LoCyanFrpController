@@ -42,35 +42,42 @@ func RunAkileMonitor(ctx context.Context, cfg config.MonitorConfig) {
 
 	flag.Parse()
 
-	connect := func() {
-		for {
-			wsc, err := connectEndpoint(cfg)
-			if err != nil {
-				logger.Error("error dial status endpoint", zap.Error(err))
-				time.Sleep(5 * time.Second)
-				continue
-			}
-			conn = wsc
-
-			_ = conn.WriteMessage(websocket.TextMessage, []byte(cfg.AuthSecret))
-			_, message, err := conn.ReadMessage()
-			if err != nil {
-				logger.Error("error while status endpoint authentication", zap.Error(err))
-				conn.Close()
-				time.Sleep(5 * time.Second)
-				continue
-			}
-
-			if string(message) == "auth success" {
-				logger.Info("connect to status endpoint successfully")
-				break
-			} else {
-				logger.Error("status endpoint authentication failed, please check your configuration", zap.Error(err))
-				conn.Close()
-				time.Sleep(5 * time.Second)
-				continue
-			}
+	const maxRetries = 5
+connect := func() {
+	retries := 0
+	for retries < maxRetries {
+		wsc, err := connectEndpoint(cfg)
+		if err != nil {
+			logger.Error("error dial status endpoint", zap.Error(err))
+			time.Sleep(5 * time.Second)
+			retries++
+			continue
 		}
+		conn = wsc
+
+		_ = conn.WriteMessage(websocket.TextMessage, []byte(cfg.AuthSecret))
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			logger.Error("error while status endpoint authentication", zap.Error(err))
+			conn.Close()
+			time.Sleep(5 * time.Second)
+			retries++
+			continue
+		}
+
+		if string(message) == "auth success" {
+			logger.Info("connect to status endpoint successfully")
+			break
+		} else {
+			logger.Error("status endpoint authentication failed, please check your configuration", zap.Error(err))
+			conn.Close()
+			time.Sleep(5 * time.Second)
+			retries++
+		}
+		if retries >= maxRetries {
+			logger.Error("max retries reached, giving up connection")
+		}
+	}
 	}
 
 	// 初始化连接
@@ -103,6 +110,7 @@ func RunAkileMonitor(ctx context.Context, cfg config.MonitorConfig) {
 
 			var buf bytes.Buffer
 			gz := gzip.NewWriter(&buf)
+			defer gz.Close()
 			if _, err := gz.Write(dataBytes); err != nil {
 				logger.Error("gzip write error", zap.Error(err))
 				continue
