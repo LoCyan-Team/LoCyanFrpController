@@ -4,7 +4,7 @@ go 1.23.1
 
 require (
 	github.com/apernet/OpenGFW v0.4.1
-	github.com/docker/docker v28.2.2+incompatible
+	github.com/docker/docker v28.3.0+incompatible
 	github.com/gorilla/websocket v1.5.3
 	github.com/henrylee2cn/goutil v1.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
