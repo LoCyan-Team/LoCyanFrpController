@@ -4,7 +4,7 @@ go 1.23.1
 
 require (
 	github.com/apernet/OpenGFW v0.4.1
-	github.com/docker/docker v28.2.2+incompatible
+	github.com/docker/docker v28.5.1+incompatible
 	github.com/gorilla/websocket v1.5.3
 	github.com/henrylee2cn/goutil v1.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
@@ -31,13 +31,10 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/go-stomp/stomp/v3 v3.1.3 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gopacket v1.1.20-0.20220810144506-32ee38206866 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
-	github.com/igm/sockjs-go/v3 v3.0.3 // indirect
 	github.com/josharian/native v1.0.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/mdlayher/netlink v1.6.0 // indirect
