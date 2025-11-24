@@ -9,7 +9,7 @@ require (
 	github.com/henrylee2cn/goutil v1.1.2
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/spf13/viper v1.21.0
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 	gopkg.in/ini.v1 v1.67.0
 )
 
