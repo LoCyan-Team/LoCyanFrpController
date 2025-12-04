@@ -16,7 +16,7 @@ type Config struct {
 
 type ControllerConfig struct {
 	Enable       bool
-	Addr         string
+	Endpoint     string
 	SendDuration time.Duration
 	NodeId       int
 	NodeApiKey   string
@@ -59,7 +59,7 @@ func ReadCfg() *Config {
 		logger.Fatal("parse config file failed", zap.Error(err))
 	}
 	controllerCfg.Enable = commonEnable
-	controllerCfg.Addr = commonInfo.Key("addr").String()
+	controllerCfg.Endpoint = commonInfo.Key("endpoint").String()
 	sendDuration, err := commonInfo.Key("send_duration").Int()
 	if err != nil {
 		logger.Fatal("parse config file failed", zap.Error(err))

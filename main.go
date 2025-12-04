@@ -5,7 +5,7 @@ import (
 	"lcf-controller/inject"
 	"lcf-controller/logger"
 	"lcf-controller/pkg/config"
-	websocket2 "lcf-controller/pkg/websocket"
+	"lcf-controller/server"
 	"os"
 	"os/signal"
 	"runtime"
@@ -46,45 +46,21 @@ func main() {
 	}
 
 	if cfg.ControllerConfig.Enable {
-		ws := websocket2.NewWebSocket(ctx)
-		logger.Info("connecting to WebSocket endpoint...")
-		err := ws.ConnectWsServer()
+		err := server.SendTunnelTrafficToServer(cfg)
 		if err != nil {
-			logger.Fatal(
-				"can't connect to WebSocket server",
-				zap.Error(err),
-			)
-		} else {
-			logger.Info("connect to WebSocket server successfully")
-
-			// 链接成功后就可以开始接收消息了
-			// 异步处理
-			go func() {
-				err := ws.ReadMsg()
+			logger.Error("Can't send proxy traffic to server", zap.Error(err))
+		}
+		ticker := time.NewTicker(cfg.ControllerConfig.SendDuration)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Info("shutting down...")
+				return
+			case <-ticker.C:
+				err := server.SendTunnelTrafficToServer(cfg)
 				if err != nil {
-					logger.Fatal("Cannot read message", zap.Error(err))
-				}
-			}()
-			defer ws.Disconnect()
-
-			// 订阅消息
-			err := ws.Subscribe("/traffic")
-			if err != nil {
-				logger.Fatal("Cannot subscribe traffic", zap.Error(err))
-			}
-
-			// 先发一个
-			ws.SendProxyStatsToServer(cfg)
-			ticker := time.NewTicker(cfg.ControllerConfig.SendDuration)
-			defer ticker.Stop()
-
-			for {
-				select {
-				case <-ctx.Done():
-					logger.Info("shutting down...")
-					return
-				case <-ticker.C:
-					ws.SendProxyStatsToServer(cfg)
+					logger.Error("Can't send proxy traffic to server", zap.Error(err))
 				}
 			}
 		}

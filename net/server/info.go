@@ -58,37 +58,37 @@ func GetServerInfo() (frps.ServerInfoResponse, error) {
 	return serverInfo, nil
 }
 
-func GetProxyList(proxyType string) (frps.Proxy, error) {
+func GetProxyList(tunnelType string) (frps.Tunnel, error) {
 	url := fmt.Sprintf(
 		"%s/%s",
 		getUrl("/proxy"),
-		proxyType,
+		tunnelType,
 	)
 
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return frps.Proxy{}, err
+		return frps.Tunnel{}, err
 	}
 
 	req.SetBasicAuth(getBasicAuthInfo())
 	resp, err := client.Do(req)
 	if err != nil {
-		return frps.Proxy{}, err
+		return frps.Tunnel{}, err
 	}
 	defer resp.Body.Close()
 
 	var response bytes.Buffer
 	if _, err := io.Copy(&response, resp.Body); err != nil {
-		return frps.Proxy{}, err
+		return frps.Tunnel{}, err
 	}
 
-	var proxyInfo frps.Proxy
+	var proxyInfo frps.Tunnel
 	body := response.Bytes()
 	err = json.Unmarshal(body, &proxyInfo)
 	if err != nil {
-		return frps.Proxy{}, err
+		return frps.Tunnel{}, err
 	}
 	return proxyInfo, nil
 }
