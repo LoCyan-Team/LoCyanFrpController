@@ -13,7 +13,7 @@ type TunnelInfoResponse struct {
 }
 
 type Tunnel struct {
-	Tunnels []TunnelInfoResponse `json:"tunnels"`
+	Tunnels []TunnelInfoResponse `json:"proxies"`
 }
 
 // 定义一个结构体来映射配置信息

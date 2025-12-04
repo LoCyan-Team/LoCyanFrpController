@@ -58,7 +58,7 @@ func GetServerInfo() (frps.ServerInfoResponse, error) {
 	return serverInfo, nil
 }
 
-func GetProxyList(tunnelType string) (frps.Tunnel, error) {
+func GetTunnelList(tunnelType string) (frps.Tunnel, error) {
 	url := fmt.Sprintf(
 		"%s/%s",
 		getUrl("/proxy"),
@@ -84,11 +84,11 @@ func GetProxyList(tunnelType string) (frps.Tunnel, error) {
 		return frps.Tunnel{}, err
 	}
 
-	var proxyInfo frps.Tunnel
+	var tunnelInfo frps.Tunnel
 	body := response.Bytes()
-	err = json.Unmarshal(body, &proxyInfo)
+	err = json.Unmarshal(body, &tunnelInfo)
 	if err != nil {
 		return frps.Tunnel{}, err
 	}
-	return proxyInfo, nil
+	return tunnelInfo, nil
 }

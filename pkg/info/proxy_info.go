@@ -7,7 +7,7 @@ import (
 )
 
 func GetTunnelInfo(cfg *config.Config, tunnelType string) ([]map[string]any, error) {
-	tunnels, err := server.GetProxyList(tunnelType)
+	tunnels, err := server.GetTunnelList(tunnelType)
 	if err != nil {
 		return nil, err
 	}
