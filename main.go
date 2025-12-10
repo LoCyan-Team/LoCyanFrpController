@@ -37,7 +37,8 @@ func main() {
 
 	cfg := config.ReadCfg()
 
-	ctx, _ := createContext()
+	ctx, cancel := createContext()
+	defer cancel()
 	if cfg.OpenGFWConfig.Enable {
 		go inject.RunOpenGFW(ctx, cfg.OpenGFWConfig)
 	}
@@ -64,5 +65,13 @@ func main() {
 				}
 			}
 		}
+	} else {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+		logger.Info("Program running, press Ctrl+C to exit")
+
+		sig := <-sigChan
+		logger.Info("Received signal, shutting down...", zap.String("signal", sig.String()))
 	}
 }
